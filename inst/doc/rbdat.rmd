@@ -1,0 +1,384 @@
+---
+title: "BDAT Implementation in R"
+author: "christian.vonderach@forst.bwl.de"
+date: 2020-10-08, 16:43:33
+output: rmarkdown::html_vignette
+# output: pdf_document
+vignette: >
+  %\VignetteIndexEntry{BDAT Implementation in R}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## BDAT: a Fortran library for taper curves
+
+*BDAT* is a Fortran program library to estimate volume, diameter, height, bark
+thickness and assortments of a specified tree. Hence, it is a library about
+taper functions. It has been developed at FVA-BW on request of BMELV for the 
+first german national forest inventory (BWI 1, 1987). Adjustements have been 
+made for the BWI2 (2002). *BDATPro* is a version including these latest 
+adjustments but also an additionaly GUI. The latest version includes biomass
+functions and form parameters for NFI3 (=BWI3). Here the latest version was
+implemented.
+
+Colloquially the library is called **BDAT**.
+
+The Fortran library has been extensively used in several application, of which
+the most important might be WEHAM (WaldEntwicklungs- and HolzAufkommensModell:
+forest developement and timber stock prediction model) but also in other forest
+inventories. At that time, R was not emerged, yet, later direct calls to the
+Windows-DLL were used. With the present R-package, the usage of BDAT in R was 
+highly simplified, ported to other operating systems (32bit and 64bit) and 
+better documented. There are some original documents on my gitlab repository
+about the methodology and application, but all have been written in German.
+
+The BDAT library is based on a spline representation of the taper function of
+different tree species. A methodological improvement has been made using 
+B-Splines and mixed-modelling, see Kublin et al. 2013 and the R-package TapeR.
+Still, BDAT is in use and keeps being used since the library offers more than
+just the taper form itself: estimation of diameters, height, double bark 
+thickness, volume of sections defined by height and/or diameter, assortments
+given parameters and all already parameterised for a whole bunch of tree species
+including deciduous tree species with their complex tree crowns. It is based on
+approximately 30.000 measured trees and studies on bark thickness and tree crown
+volume.
+
+## further references
+Further references like BDAT Documentations, related articles and reports can be
+found at https://gitlab.com/vochr/rbdat especially at
+https://gitlab.com/vochr/rbdat/-/tree/master/bdatdocs, 
+unfortunately these resources are all written in German.
+
+## Functions
+The R-package contains all relevant functions from the Fortran-library and uses 
+vectorized evaluation. It is recommended to use the get*-functions, but for
+convenience wrapper functions using the names of the Fortan-subroutines are 
+included so that older scripts can easily be adapted to the use of the 
+R-package.
+
+Beside the core-functions (buildTree, getDiameter, getHeight, getVolume, 
+getAssortment, getBiomass, getBark, getForm and getSpeciesCode) there is a 
+plotting function. 
+
+### preliminary note
+The use of the BDAT Fortran functions requires the preparation of the data to
+conform with what Fortran is expecting to come. Within this R-Package, this is
+implemented in two ways: either one can prepare all necessary variables within
+a list or data frame and pass it over to the respective function via the 
+`tree` parameter or one can pass a tree definition into parameter `tree` of each
+function and use the second parameter (i.e. `Dx`, `Hx`, `AB` or `sort`, here 
+called `vars`) to hand over the required - function specific - information. In 
+the first case, the function returns one result for each row given. In the 
+second case, a cross join / cartesian product between `tree` and
+`vars` is calculated. If `vars` is of size one, the results is the same as in 
+the first case. If the size of `vars` is bigger than one, the functions return
+one value for each given tree (e.g. 3) and element of `vars` (e.g. 4), in the
+example this is 12. For functions returning a scalar, a matrix is returned with
+`trees` given in rows and `vars` given in columns (e.g. 3x4-matrix). The
+assortment function, usually returning a data frame, still returns a data frame,
+but now the order (and naming) of trees is different from the given input `tree`
+parameter, since internally the tree object is now expanded. Hence, the first
+tree is repeated (length-of-vars) number of times, before the second tree is
+process and returned and so on.
+
+### Getting started
+In BDAT, a tree is specified at its minimum by its species code, dbh (diameter 
+in breast height, i.e. 1.3m) and height. Implicitly, this defines a second 
+diameter in 30% of three height according to the "Masse-Tafeln" (Volume-Tables) 
+from Grundner und Schwappach (1921). For the possibility of more precisely
+specifying taper form see further below.
+
+```{r}
+library(rBDAT)
+tree <- buildTree(tree = list(spp=1, D1=30, H=27))
+str(tree)
+```
+
+One can visualise the taper curve of a given tree using the plot-function:
+
+```{r pressure, fig.dim=c(7, 4), echo=TRUE}
+plot(tree)
+```
+Here, the taper curve over bark (black) and under bark (grey) is drawn.
+
+### getting BDAT-species code
+BDAT has been parameterised for 36 tree species, more or less common in Germany
+based on about 30.000 trees. These 36 tree species are index and each posesses 
+its own BDAT-species code. This code and the respective species name (short and 
+long format), english species name and scientific name can be retrieved by the
+getSpeciesCode-function:
+```{r}
+getSpeciesCode()
+```
+If the function is called without any parameter, a data.frame is returned 
+holding the information which can be retrieved. 
+One can alternatively specify the type of `input` and `output`. `Input`
+must be one of the data entries, `output` must be one of the column names.
+```{r}
+getSpeciesCode(1)
+getSpeciesCode("Fi")
+getSpeciesCode("NS") # english abbreviation of Norway spruce
+getSpeciesCode(1, "scientific")
+getSpeciesCode(c(1:36), "short")
+```
+
+
+### getting diameter in given height
+The taper functions specify a curve being a function of height within tree and 
+returns the respective diameter. Hence, one can evalutate this function at a 
+given height and receive the diameter. There are fortran functions to return 
+either diameter over bark and diameter under bark, but this package binds 
+these functions together and uses a boolean parameter to switch between both.
+
+```{r}
+getDiameter(tree, Hx = 1.3) # return dbh
+```
+
+As a default, diameter over bark is returned, but this can easily be changed:
+
+```{r}
+getDiameter(tree, Hx = 1.3, bark = FALSE) # return d.u.b. at 1.3m
+```
+
+It is possible to request diameter in several heights at once:
+```{r}
+getDiameter(tree, Hx = c(1:10))
+```
+
+Using this kind of call to the functions, `Hx` is evaluated for each given tree 
+separately:
+```{r}
+tree2 <- buildTree(list(spp=1, D1=c(30, 35), H=27))
+getDiameter(tree2, Hx = c(1, 2))
+```
+Here, a matrix is returned with one row per tree and one column per requested 
+Hx. 
+
+An alternative way is specifying `Hx` directly inside the tree-object:
+```{r}
+tree2 <- buildTree(list(spp=1, D1=c(30, 35), H=27, Hx=c(1, 2)))
+tree2
+getDiameter(tree2)
+```
+Here, tree2 consists of 2 rows, because the give list is internally transformed
+into a data frame (common rules for building data.frames apply). Finally, the
+object is evaluated row-wise. Because `Hx` is already given, the parameter `Hx`
+can be left empty.
+
+
+### getting double bark thickness
+Double bark thickness is that part of a diameter over bark, which is considered 
+to consist of bark tissue. The relation between wood and bark with respect to 
+diameter can be expressed as {double bark thickness} + {diameter under bark} =
+{diameter over bark}. The implemented functions originate from the works of 
+Altherr et al. (1974, 1975, 1976, 1978 and 1979).
+```{r}
+dub <- getDiameter(tree, Hx=1.3, bark = FALSE)
+dob <- getDiameter(tree, Hx=1.3, bark = TRUE)
+dbt <- getBark(tree, Hx=1.3)
+dub + dbt == dob
+```
+
+Again, it is possible to either include parameter `Hx` into the tree-object or 
+pass it separately. In the second case, an matrix is returned if Hx is longer 
+than one.
+```{r}
+getBark(tree2, Hx = 1:5)
+```
+
+
+### getting height for given diameter
+The diameter-height-relation from above, where we evaluated the function for a
+given height-value, can also be evaluated for a given diameter. The internal
+function is an iterative procedure to determine height. Diameter can be
+specified over and under bark. Default is bark = TRUE. 
+```{r}
+getHeight(tree, Dx=30) # height of diameter over bark
+getHeight(tree, Dx=30, bark = FALSE) # height of diameter under bark == 30
+```
+
+Again, it is possible to vary passing of the `Dx`-parameter: it can take one or 
+several values, but can also be included to the tree parameter. In the first
+case, a cross join / cartesian product between `tree` and `Dx` is created, 
+in the second case the `tree` object is processed *as is*.
+```{r}
+getHeight(tree2, Dx=c(30, 20, 10)) # returns value in meters
+tree2$Dx = c(30, 20)
+getHeight(tree2)
+```
+As one can see, in the first case a matrix with one row per tree and one column 
+per `Dx` is returned and in the second call, a vector with one element for each
+row in `tree2`.
+
+
+### getting volume
+The maybe most interesting function is the one returning volume. The function 
+includes a switch to return volume with (the default) or without bark volume as
+well. Volume is calculated using middiameter-formula (in Germany called 
+"Huber'sche Formel") from 2m-sections (default), but section lengths can be 
+varied. Additionally, it is necessary to specify the section for which volume
+is required. This can be done either using diameters or heights, or a mixture of
+both. If parameter `AB` is not given, i.e. NULL, then the function assumes 
+coarse wood volume over bark is required (i.e. from forest floor up to diameter
+over bark of 7cm):
+```{r}
+getVolume(tree) # get coarse wood, which is the same as next line
+getVolume(tree, AB = list(A=0, B=7), iAB=c("H", "Dob"), bark = T) 
+```
+
+One can precisely specify the section for which volume under or over bark is
+required:
+```{r}
+# volume including bark between height 1m and 2m
+getVolume(tree2, AB=list(A=1, B=2)) 
+# volume excluding bark between 30 and 7cm in diameter over bark
+getVolume(tree2, AB=list(A=30, B=7), iAB="dob", bark = F) 
+```
+
+The section length for which middiameter-formula is applied is 2m as a default.
+It is possible to change that behaviour by setting parameter `sl` inside the 
+`AB`-argument:
+```{r}
+# again: coarse wood volume
+getVolume(tree) 
+# identical
+getVolume(tree, AB=list(A=0.27, B=7, sl=2), iAB=c("H", "Dob"), bark=F) 
+# using sl=0.1, that is section length for volume calculation set to be 0.1m
+getVolume(tree, AB=list(A=0.27, B=7, sl=0.1), iAB=c("H", "Dob"), bark=F) 
+```
+
+If one wants to get the volume for several sections of a tree, one could either
+build a suited data.frame on its own, repeating the tree attributes and
+adjusting the `A`and `B` values as needed. The more elegant way is to let the
+functions do that work for you. In the easiest case, we saw that already in the
+example above, specifying one tree and one section, where the function returns
+exactly one volume. Internally, the `AB` data is merged to the tree data by a
+cross join (or cartesion product), hence we can make use of that behaviour by
+defining several sections at once:
+```{r}
+getVolume(tree, AB=list(A=0:9, B=1:10))
+getVolume(tree = tree2, AB=list(A=0:9, B=1:10))
+```
+
+
+### getting biomass
+Beside getting volume section information, there is a function to get total
+aboveground biomass. These biomass-functions were fitted independently of the
+parameterisation of BDAT and were developed in preparation of the german NFI3.
+These functions are based on 983 analysed trees of a subset of species only.
+The other species are either fit at a synthetical data set or in worst case
+subsumed to other species. These functions are the official ones used during
+reporting of results of the NFI3.
+
+The call is identical to the already shown pattern:
+```{r}
+getBiomass(tree)
+getBiomass(list(spp=1, D1=30, H=27, D2=c(23, 24, 25))) 
+```
+
+
+
+
+### getting assortments
+One very nice feature of the BDAT program library is its ability to use the
+presented functions to simulate roundwoods from given trees. For that purpose
+a separate function was written, which is called via `getAssortment()`. 
+Similarly to other functions, it requires data of one or more trees
+and optionally parameters to control the sorting process. There are quite a few
+parameters to be specified. It's easiest to show that using some examples:
+```{r}
+getAssortment(tree2) # using standard assortment parameters
+```
+By default, a data.frame is returned with one row for each tree and roundwood 
+piece. It keeps information about the roundwood foot position inside the stem,
+its length (without add-on), mid-diameter under bark (midD), top-diameter under
+bark (topD) and the respective volume under bark. The standard assortments 
+comprise stem-wood (Sth), second length stem wood (Ab, after optionally 
+specified cutting diameter for Sth or after transportation-cut, i.e. 20m),
+industrial roundwood (Ind) and residual coarse wood (nvDh, between cutting 
+diameter for Ind and 7cm over bark). Assortment X is unusuable wood at the stem
+foot.
+
+If one is interested in raw BDAT return, one can specify `value='raw'`:
+```{r}
+getAssortment(tree2, value = "raw") # usually of little interest...
+```
+Other options are also available like 'Vol' (Volume), 'Skl' (Stärkeklassen, i.e.
+diameter classes), 'Fix' (fixed length assortments, if specified) and 'LDSort'
+(an added feature w.r.t. the original BDAT Fortran code, keeping length and 
+diameter of the assortments, which was missing in the original BDAT library,
+hence only available in rBDAT!), which return a subset of the raw BDAT 
+return value. The default is 'merge' which produces an aggregated data.frame of
+relevant information about the roundwoods produced for each tree.
+
+As said before, assortment rules can be specified using several parameters, 
+which in detail are given in the help file. Some examples follow:
+```{r}
+getAssortment(tree, sort=list(Az=15)) # minimum diameter o.b. for assortments
+getAssortment(tree, sort=list(Az=15, Hsh=10)) # Hsh= max. height of sawlog quality
+```
+Additionally one can specify a fixed length assortment at stem foot, which is
+cut before sawlogs.
+```{r}
+## fixN = number of roundwood pieces
+## fixL = length of roundwood pieces in m
+## fixA = absolute length addition (good for measure) in cm
+## fixR = relative length addition in %
+## fixZ = minimum cutting diameter for this assortment (Z=Zopf) in cm
+getAssortment(tree, sort=list(Az=15, fixN=2, fixL=4, fixA=10, fixZ=20)) 
+```
+In case the considered tree exhibits rotten/decaying wood at stem foot, this
+can also be specified (in german termed X-Holz):
+```{r}
+getAssortment(tree, sort=list(lX=1.4)) # remove 1.4m from stump upwards
+```
+
+Additionally, one can plot the taper curve and include the assortments:
+```{r, fig.dim=c(7, 4), echo=TRUE}
+assort <- getAssortment(tree, sort=list(Az=15, fixN=2, fixL=4, fixA=10, fixZ=20))
+plot(tree, assort=assort)
+```
+
+#### using more than one assortment specification 
+`buildTree` uses the parameters `tree` and `vars` which are merged
+by a cross join / cartesian product. Hence, if assortment specifications are
+extended to a length bigger one, the function should return an estimated 
+assortment for each tree and specified assortment. Let's check that:
+```{r}
+getAssortment(tree, sort = list(Az=c(10, 7)))
+getAssortment(tree2, sort = list(Az=c(10, 7)))
+```
+Here, the first call returns the estimated assortments for both assortment
+specifications, the tree order inside the resulting object is clear: tree 1 uses
+Az=10 and tree 2 uses Az=7. In the second call, the order is the same, although
+this is not as clear as in the first example.
+
+### more advanced specification of trees
+As shown, a tree is specified by its species code, its dbh and height. If done
+so, this assumes a predefined diameter in 30% of tree height, which in turn 
+defines the taper form or the relation between diameter in 30% and 5% of the 
+tree height. But easily, this can be changed: 
+the BWI-equivalent taper form can be specified using H2=50. 
+The D2 and H2 parameter can take a very flexible parameterisation being diameter
+and heights but also quantiles of the q03-distribution (H2) or the q03-parameter
+itself (D2). q03 is the quotient of diameter in 30% of three height and in 5% of
+tree height. Hence, quite a variety of taper forms can be represented. All 
+BDAT-functions respond sensitively to this fourth parameter.
+```{r}
+tree <- buildTree(tree = list(spp=1, D1=30, H=27, H2=c(30, 50, 99, 0), 
+                              D2=c(0, 0, 0, -0.8), Hx=0.3*27))
+str(tree)
+getDiameter(tree) # Hx specified beforehand being 30% of tree height
+```
+
+With the getForm-function, one can specify trees mimicking the mean sample trees
+from different inventories. This function returns the expected q03 of a given
+diameter-height-class, here of dbh=30 and h=27:
+```{r}
+getForm(tree[1,], inv=c(1, 2, 3, 4))
+```
+

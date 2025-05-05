@@ -21,7 +21,7 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 NeedsCompilation: yes
-Packaged: 2025-05-05 08:36:24 UTC; christian.vonderach
+Packaged: 2025-05-05 09:09:00 UTC; christian.vonderach
 Author: Christian Vonderach [aut, cre],
   Edgar Kublin [aut],
   Bernhard Bösch [aut],

@@ -6654,6 +6654,7 @@
       REAL xk95a(7,8),xk95b(7,8)
       INTEGER nxk95a(8),nxk95b(8)
       INTEGER Nnp,Np,Nxk
+      INTEGER i, j ! christian vonderach, 07.05.2025 (due to CRAN check on Fedora GCC15)
       REAL B(1:80,1:8),Xk(1:6)
       REAL Yy
       REAL Azo(7,0:3)

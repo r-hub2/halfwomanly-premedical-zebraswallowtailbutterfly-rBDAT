@@ -102,7 +102,7 @@ getAssortment(tree, sort=list(Az=15, fixN=2, fixL=4, fixA=10, fixZ=20))
 ## -----------------------------------------------------------------------------
 getAssortment(tree, sort=list(lX=1.4)) # remove 1.4m from stump upwards
 
-## ---- fig.dim=c(7, 4), echo=TRUE----------------------------------------------
+## ----fig.dim=c(7, 4), echo=TRUE-----------------------------------------------
 assort <- getAssortment(tree, sort=list(Az=15, fixN=2, fixL=4, fixA=10, fixZ=20))
 plot(tree, assort=assort)
 

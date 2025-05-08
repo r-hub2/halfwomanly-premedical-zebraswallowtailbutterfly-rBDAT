@@ -19,7 +19,7 @@ Imports: utils, graphics
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 NeedsCompilation: yes
-Packaged: 2025-05-07 14:28:43 UTC; christian.vonderach
+Packaged: 2025-05-08 09:09:31 UTC; christian.vonderach
 Author: Christian Vonderach [aut, cre],
   Edgar Kublin [aut],
   Bernhard Bösch [aut],

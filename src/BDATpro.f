@@ -6654,7 +6654,6 @@
       REAL xk95a(7,8),xk95b(7,8)
       INTEGER nxk95a(8),nxk95b(8)
       INTEGER Nnp,Np,Nxk
-      INTEGER i, j ! christian vonderach, 07.05.2025 (due to CRAN check on Fedora GCC15)
       REAL B(1:80,1:8),Xk(1:6)
       REAL Yy
       REAL Azo(7,0:3)
@@ -6667,6 +6666,7 @@
       REAL hoehr(6,6)
       REAL Sxk07(7,8),Sd07(24,8)
       INTEGER Snxkn7(8)
+      INTEGER i, j ! christian vonderach, 08.05.2025
       REAL glLSort(1:5), glDSort(1:5) ! christian vonderach, 23.07.2018
       REAL   HStockEnde
       DATA    HStockEnde /0/
@@ -6692,6 +6692,7 @@
       COMMON /d95/nxk95a,nxk95b,xk95a,xk95b,a95,b95
       COMMON /Schaft/  Nnp,Np,Nxk,B,Xk
       COMMON /Sk/ Yy,Durel
+      COMMON /itr/ i, j ! christian vonderach, 08.05.2025
 !
 !.....Splinekoeffizienten für die Schaftkurven..........................
 !

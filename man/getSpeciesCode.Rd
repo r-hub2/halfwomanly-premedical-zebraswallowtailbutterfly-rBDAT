@@ -59,7 +59,7 @@ getSpeciesCode(inSp = c("Bu", "Fi")) ## asking for codes of abbreviated german n
 getSpeciesCode(inSp = c("Bu", "Fi", "Bu")) ## order is preserved
 getSpeciesCode(inSp = c("Buche", "Fichte")) ## asking for codes of german names
 getSpeciesCode(inSp = c("BE", "NS")) ## ... abbreviated english names
-getSpeciesCode(inSp = c("beech", "Norway spruce")) ## ... english names
+getSpeciesCode(inSp = c("Common beech", "European spruce")) ## ... english names
 getSpeciesCode(inSp = c("Fagus sylvatica", "Picea abies")) ### ... scientific names
 
 # get previous species look-up table

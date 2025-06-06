@@ -1,3 +1,26 @@
+# rBDAT 1.1.0
+
+* updated English species names in getSpeciesCode() to match to the names in 
+  German NFI; the old version can still be accessed.
+* bug fix in assortment function for cases where lX (length of unusable wood at 
+  stem food) was larger than height of minimum cutting diameter
+* adjusted check on lX in buildTree()
+
+# rBDAT 1.0.1
+
+* removing significant warning in r-devel-linux-x86_64-fedora-gcc when compiling
+  the fortran code: variable declaration for implied DO loop in data block
+* bug fix in error message referring to wrong variable (Skz instead of Sokz)
+* added exception for cases where assortment parameter lX is too big, especially
+  bigger than 80% of tree height.
+
+# rBDAT 1.0.0
+
+* current state of package considered version 1.0.0
+* adjusted/removed comments in Fortran code
+* updated helpfiles
+* correct check on variable 'inv' in function getForm()
+
 # rBDAT 0.10.0
 
 * added information and example about 'inv=0' in getForm to return volume tables

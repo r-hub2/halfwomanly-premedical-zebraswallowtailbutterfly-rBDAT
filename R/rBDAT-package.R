@@ -19,4 +19,4 @@
 #' Bundeswaldinventur". ISSN: 0178-3165. Available at
 #' \url{https://gitlab.com/vochr/rbdat/-/blob/master/bdatdocs/}
 #' @keywords package
-NULL
+"_PACKAGE"

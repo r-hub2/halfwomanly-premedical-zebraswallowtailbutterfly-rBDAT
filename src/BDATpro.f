@@ -146,7 +146,12 @@
        else
         wHsh=MIN(H,wHAz,wHDHGrz)
        end if
-
+	   
+	   ! cv 05.06.2025
+	   If((Hx+0.01*H).gt.MIN(wHDHGrz, wHAz)) then ! für den Fall falscher X-Holz Laenge
+	    Hx = MIN(wHDHGrz, wHAz) - 0.01*H
+		IF(Hx.gt.3) Hx=int(Hx*10)/10
+	   end if
 
        wZsh= xFNBDATDoRHx (BDATBArtNr,D1, H1, D2, H2,
      1        H, wHsh, IErr, wZsh)
@@ -559,13 +564,17 @@
 
 !     Ergaenzung Christian Vonderach 22.01.2019
 !     MDM, Laenge + zopf IndustrieHolz ins output schreiben
-!     vgl. RETURN Zeile 933
-!     Zopf direkt abzgl. 0.5 (forstl. Runden), da Dm sicher < 20
       LDSort(13) = LDSort(1) + LDSort(2) + H0FixLng ! Fußpunkt Ind
       LDSort(14) = wL0 ! Länge Ind
       LDSort(15) = DMoR ! MDM Ind
       LDSort(16) = xFNBDATDoRHx(wBDATBArtNr,wD1,wH1,wD2,wH2,Hges,
-     1       wH0+wL0, iErr,DMoR) - 0.5 ! Zopf Ind
+     1       wH0+wL0, iErr,DMoR) ! Zopf Ind
+	  if(LDSort(16).lt.20) then ! forstlich abrunden
+	   LDSort(16) = LDSort(16) - 0.5
+	  else
+	   LDSort(16) = LDSort(16) - 0.75
+	  end if
+	  
       if(LDSort(2).le.0.0001) then
        LDSort(1)=0 ! kein X-holz=>Nullsetzen
       else
@@ -635,7 +644,9 @@
        Ifeh = wIfeh
 
 ! ...Zuweisung COMMON /glLDSort/ zu LDSort(1:20) christian vonderach 24.07.2018
-! ...X-holz oben, direkt nach Berechnung
+! ...aktualisierung X-holz cv 06.06.2025
+      LDSort(2) = glLSort(1) ! Laenge des Sortiments [m]
+      LDSort(3) = glDSort(1) ! Mittendurchmesser [cm]
 ! ...Stammholz, zzgl Fixlaengen am Stammfuss
       LDSort(5) = LDSort(1) + LDSort(2) + H0FixLng! Fussposition im Stamm
       LDSort(6) = glLSort(2) ! Laenge des Sortiments [m]
@@ -648,11 +659,11 @@
       LDSort(13) = LDSort(9) + LDSort(10)*1.01 ! Fussposition im Stamm
       LDSort(14) = glLSort(4) ! Laenge des Sortiments [m]
       LDSort(15) = glDSort(4) ! Mittendurchmesser [cm]
-! ...nvD-Holz
+! ...nvD-Holz (Obs: Ih ohne Zugabe)
       LDSort(17) = LDSort(13) + LDSort(14) ! Fussposition im Stamm
       LDSort(18) = glLSort(5) ! Laenge des Sortiments [m]
       LDSort(19) = glDSort(5) ! Mittendurchmesser [cm]
-      do i=4, 20, 4
+      do i=4, 20, 4 ! Berechnung Zopfdurchmesser für Sortimente
        if (LDSort(i-2).gt.0.0001) then ! Abfang Rundungsfehler 10.12.2018 cv
         tmp = xFNBDATDoRHx(BDATBArtNr, D1, H1, D2, H2, H,
      1     LDSort(i-3) + LDSort(i-2), iErr, tmp)
@@ -663,7 +674,7 @@
         LDSort(i-2)=0 ! Laenge auf exakt 0 setzen
         LDSort(i-1)=0 ! Mittendurchmesser auf 0 setzen, falls Laenge=0
        end if
-       LDSort(i) = tmp ! Zopfdurchmesser [cm]
+       LDSort(i) = tmp ! Zopfdurchmesser [cm] der Sortimente
       end do
 ! ...ende ergaenzung christian vonderach 24.07.2018...
 
@@ -674,418 +685,6 @@
 ! ...<<18.09.03>> : Aenderung :.......................................................
 
       END SUBROUTINE BDAT20
-
-
-!     ##################################################################
-      SUBROUTINE BDAT10(BDATBArtNr, D1, H1, D2, H2, H,
-     1     Hx, Hkz, Skz, Az, Hsh, Zsh, Zab, Sokz,
-     2     Skl,Vol,Bhd,Ifeh)
-!     ##################################################################
-
-!  Aenderung <<22.09.03>> :--------------------------------------------------------------
-
-! ...<<14.03.03>> : Aenderung :............................................................
-
-
-       parameter (StammFussPrz =1)
-
-       INTEGER BDATBArtNr
-       REAL   D1
-       REAL   H1
-       REAL   D2
-       REAL   H2
-       REAL   H
-       REAL   Hx
-       INTEGER Hkz
-       INTEGER Skz
-       REAL   Az
-       REAL   Hsh
-       REAL   Zsh
-       REAL   Zab
-       INTEGER Sokz
-       INTEGER Skl(1:6)
-       REAL   Vol(1:7)
-       REAL   Bhd
-       INTEGER Ifeh
-
-! ----------------------------------------------------------------------------------------
-
-       INTEGER wBDATBArtNr
-       REAL   wD1
-       REAL   wH1
-       REAL   wD2
-       REAL   wH2
-       REAL   wH
-       REAL   wHx
-       INTEGER wHkz
-       INTEGER wSkz
-       REAL   wAz
-       REAL   wHsh
-       REAL   wZsh
-       REAL   wZab
-       INTEGER wSokz
-       INTEGER wSkl(1:6)
-       REAL   wVol(1:7)
-       REAL   wBhd
-       INTEGER wIfeh
-
-! ----------------------------------------------------------------------------------------
-
-       INTEGER i, IErr
-       REAL   Hges
-       REAL   wH0, wL0
-       REAL   DMoR, wDx, VoloR, SuVoloR
-
-       REAL   Pi
-       DATA    Pi       /3.14159E0/
-
-! ---------------------------------------------------------------------------------------
-
-       REAL   wDHGrz
-       DATA    wDHGrz    /7/ ! DerholzGrenze in cm
-       REAL   wHDHGrz     ! Hoehe der DerbHolzGrenze (aus)
-       REAL   wSekLng
-       DATA    wSekLng    /2/ !   SektionsL?ngen VolBerechnung
-
-! ---------------------------------------------------------------------------------------
-
-! ...<<18.09.03>> : Aenderung :.......................................................
-
-       REAL   HStockEnde
-       REAL   HStHAnfang
-       REAL   LngStH
-       REAL   HStHLzEnde
-       REAL   HBDATGes
-
-       COMMON /XtrComPar/ HStockEnde, HStHAnfang, LngStH, HStHLzEnde
-     1     , HBDATGes
-
-! ...<<18.09.03>> : Aenderung :.......................................................
-
-       wBDATBArtNr=BDATBArtNr
-       wD1=D1
-       wH1=H1
-       wD2=D2
-       wH2=H2
-       wH=H
-       wHx=Hx
-       wHkz=Hkz
-       wSkz=Skz
-       wAz=Az
-       wHsh=Hsh
-       wZsh=Zsh
-       wZab=Zab
-       wSokz=Sokz
-
-       do i=1,6
-        wSkl(i)=0
-       end do
-       do i=1,7
-        wVol(i)=-1
-       end do
-
-       Pi = 3.14159
-
-       wBhd=0
-       wIfeh=0
-
-! ...<<17.01.03>> : Aenderung :------------------------------------------------------------
-
-! ...StammHoehe Hges = H(Hkz) :........................................................
-
-       if (Hkz.eq.1) then
-        Hges=H+2
-       else if (Hkz.eq.2) then
-        if (30.lt.D1) then
-         Hges=30+(D1-30)*0.3
-        else
-         Hges=D1
-        end if
-        if (H.gt.Hges-3) Hges=H+4
-       else
-        Hges=H
-       end if
-
-       HBDATGes=Hges
-       HStockEnde=Hges*StammFussPrz*0.01
-       HStockEnde=MIN(HStockEnde,H)
-
-!  BDAT 1.0 - X-Holz:------------------------------------------------------------------
-
-! ...<<17.01.03>> : Aenderung :------------------------------------------------------------
-
-       call xBDATD2H2Trans (wBDATBArtNr,wD1,wH1,wD2,wH2,Hges)
-
-       Call BDAT(wBDATBArtNr,wD1,wH1,wD2,wH2,wH,wHx,wHkz,
-     1    wSkz,wAz,wHsh,wZsh,wZab,wSokz,
-     2    wSkl(1),wVol(1),wBhd,wIfeh)
-
-!  X-HolzVolumen (Efm oR) :.............................................................
-
-       Vol(2) = wVol(2)
-       Skl(1) = wSkl(1)
-       Skl(2) = wSkl(2)
-
-       BHD  = wBHD
-
-       Ifeh = wIfeh
-
-       SuVoloR = Vol(2)
-
-!  Aenderung <<22.09.03>> :--------------------------------------------------------------
-
-!   vol(1)  = xFNBDATVolDHmR(wBDATBArtNr,wD1,wH1,wD2,wH2,Hges,
-! 2       wDHGrz,wHDHGrz,wSekLng,wIfeh,wVolDHmR)
-       Dx=wDHGrz
-
-       wHDHGrz = xFNBDATHxDx(BDATBArtNr,D1,H1,D2,H2,Hges,
-     2 wHDHGrz,wDHGrz,IErr)
-       wHDHGrz = MIN(wHDHGrz,H)
-
-       A=0
-       B=wHDHGrz
-       SekLng=2
-
-       VolDHmR = xFNBDATVolABmR(BDATBArtNr,D1,H1,D2,H2,Hges,
-     2       A,B,SekLng,IErr,VolABmR)
-       vol(1)  = VolDHmR
-
-!  Aenderung <<22.09.03>> :--------------------------------------------------------------
-
-       if((0<Ifeh).and.(Ifeh<5)) return
-
-!  BDAT 1.0 - Sortierung StammHolz IndustrieHolz :-------------------------------------
-
-       wBDATBArtNr=BDATBArtNr
-       wD1=D1
-       wH1=H1
-       wD2=D2
-       wH2=H2
-       wH=H
-       wHx=Hx
-       wHkz=Hkz
-       wSkz=Skz
-       wAz=Az
-       wHsh=Hsh
-       wZsh=Zsh
-       wZab=Zab
-       wSokz=Sokz
-
-       do i=1,6
-        wSkl(i)=0
-       end do
-       do i=1,7
-        wVol(1:7)=0
-       end do
-
-       wBhd=0
-       wIfeh=0
-
-       call xBDATD2H2Trans (wBDATBArtNr,wD1,wH1,wD2,wH2,Hges)
-
-       wIFeh=0
-
-!  Aenderung <<17.01.03>> :...schwaches Stangenholz Du < 10 cm --------------------------
-
-
-!  Aenderung <<29.08.03>> :...schwaches Stangenholz Du < 10 cm --------------------------
-
-
-
-!  ################### IH bis AufarbeitungsZopf Rest uvD ###############################
-
-
-!   ...MittenDurchmesser o.R. Fixl?nge (stat. Erwartungswert gerundet) :............
-
-
-!  Aenderung <<22.09.03>> :...schwaches Stangenholz Du < 10 cm --------------------------
-
-       wHDHGrz = xFNBDATHxDx(BDATBArtNr,D1,H1,D2,H2,Hges,
-     2 wHDHGrz,wDHGrz,IErr)
-       wHDHGrz = MIN(wHDHGrz,H)
-
-!  Aenderung <<22.09.03>> :--------------------------------------------------------------
-
-       if (wD1 < 10) then
-
-        wH0 = Hges*StammFussPrz*0.01 + wHx
-
-        if(wH0>H) wH0=H
-
-! ...<<20.01.03>> : Aenderung :............................................................
-
-        wL0 = (wHDHGrz-wH0)
-
-        if(wL0>wHDHGrz) wL0=wHDHGrz
-        if(wL0<0) wL0=0
-
-        wHx = wH0+wL0*0.5
-
-        if (wHx>H) wHx=H
-
-        DMoR=xFNBDATDoRHx(wBDATBArtNr,wD1,wH1,wD2,wH2,Hges,
-     1       wHx, iErr,DMoR)
-
-        if (DMoR<20) then
-         DMoR=DMoR-0.5
-        else
-         DMoR=DMoR-0.75
-        end if
-
-        wDx = DMoR * 0.01
-        VoloR = Pi * 0.25 * wDx * wDx * wL0
-
-        do i=3,6
-         Skl(i)=0
-        end do
-
-        do i=3,7
-         Vol(i)=0
-        end do
-
-        if (VoloR>(Vol(1)-SuVoloR)) VoloR = Vol(1)-SuVoloR
-
-        if (wSokz > 0) then
-
-         SuVoloR = SuVoloR+VoloR
-         vol(5)=VoloR
-
-        else
-         vol(5)=0
-        end if
-
-        vol(7) = Vol(1) - SuVoloR
-
-        RETURN
-
-       end if
-
-!  Aenderung <<17.01.03>> :--------------------------------------------------------------
-
-       Call BDAT(wBDATBArtNr,wD1,wH1,wD2,wH2,wH,wHx,wHkz,
-     1    wSkz,wAz,wHsh,wZsh,wZab,wSokz,
-     2    wSkl(1),wVol(1),wBhd,wIfeh)
-
-       do i=3,6
-        Skl(i)=wSkl(i)
-        Vol(i)=wVol(i)
-        SuVoloR = SuVoloR + Vol(i)
-       end do
-
-! Aenderung  <<20.09.02>> :----------------------------------------------------------------
-
-       if ((SuVoloR>0).and.(SuVoloR<Vol(1))) then
-        Vol(7) = Vol(1)-SuVoloR
-        if (Vol(7)<0) Vol(7)=0
-       else
-        Vol(7) = 0
-       end if
-
-       Ifeh = wIfeh
-
-      END SUBROUTINE BDAT10
-
-
-! Aenderung <<04.09.02>> :-----------------------------------------------------------------
-
-
-!     ##################################################################
-      SUBROUTINE xBDAT10(BDATBArtNr, D1, H1, D2, H2, H,
-     1     Hx, Hkz, Skz, Az, Hsh, Zsh, Zab, Sokz,
-     2     Skl,Vol,Bhd,Ifeh)
-!     ##################################################################
-
-! ...<<14.03.03>> : Aenderung :............................................................
-
-       INTEGER BDATBArtNr
-       REAL   D1
-       REAL   H1
-       REAL   D2
-       REAL   H2
-       REAL   H
-       REAL   Hx
-       INTEGER Hkz
-       INTEGER Skz
-       REAL   Az
-       REAL   Hsh
-       REAL   Zsh
-       REAL   Zab
-       INTEGER Sokz
-       INTEGER Skl(1:6)
-       REAL   Vol(1:7)
-       REAL   Bhd
-       INTEGER Ifeh
-
-!     ----------------------------------------------------------------------------------------
-       REAL   DHGrz
-       DATA    DHGrz    /7/ ! DerholzGrenze in cm
-       REAL   HDHGrz     ! Hoehe der DerbHolzGrenze (aus)
-       REAL   SekLng
-       DATA    SekLng    /2/ !   SektionsL?ngen VolBerechnung
-       REAL   VolDHmR     ! VolumenDerbHolz  (aus)
-! ----------------------------------------------------------------------------------------
-       REAL   SuVoloR
-! ----------------------------------------------------------------------------------------
-
-
-! ...<<18.09.03>> : Aenderung :.......................................................
-
-       REAL   HStockEnde
-       REAL   HStHAnfang
-       REAL   LngStH
-       REAL   HStHLzEnde
-       REAL   HBDATGes
-
-       COMMON /XtrComPar/ HStockEnde, HStHAnfang, LngStH, HStHLzEnde
-     1     , HBDATGes
-
-
-! ...<<18.09.03>> : Aenderung :.......................................................
-
-       do i=1,6
-        Skl(i)=0
-       end do
-       do i=1,7
-        Vol(1:7)=0
-       end do
-
-       Bhd=0
-       Ifeh=0
-
-! ...Aenderung <<10.09.02>> :..............................................................
-
-       call xBDATD2H2Trans (BDATBArtNr,D1,H1,D2,H2,H)
-
-       Call BDAT(BDATBArtNr,D1,H1,D2,H2,H,Hx,Hkz,
-     1    Skz,Az,Hsh,Zsh,Zab,Sokz,
-     2    Skl(1),Vol(1),Bhd,Ifeh)
-
-        vol(1)  = xFNBDATVolDHmR(BDATBArtNr,D1,H1,D2,H2,H,
-     2       DHGrz,HDHGrz,SekLng,Ifeh,VolDHmR)
-
-!   -------------------------------------------------------------------------------------
-
-       SuVoloR = Vol(2)
-
-       do i=3,6
-        SuVoloR = SuVoloR + Vol(i)
-       end do
-
-! Aenderung  <<20.09.02>> :----------------------------------------------------------------
-
-       if ((SuVoloR>0) .and. (SuVoloR<Vol(1))) then
-        Vol(7)=Vol(1)-SuVoloR
-        if (Vol(7)<0) Vol(7)=0
-       else
-        Vol(7) = 0
-       end if
-
-!  Vol(7)=Vol(1)-SuVoloR
-!
-!  if (Vol(7)<0) Vol(7)=0
-
-      END SUBROUTINE xBDAT10
-
 
 
 ! ****************************************************************************************
@@ -5466,6 +5065,9 @@
       ELSE
          Rund=Kw-0.5
       END IF
+	  IF (Rund.lt.0.0) then !CV 05.06.2025
+		 Rund = 0
+	  END IF
       RETURN
 !     debug subchk
       END FUNCTION
@@ -5546,7 +5148,7 @@
       sthh=hazop
 !
 !................................Klasse u Vol.des X-Holzes-unten
-
+      IF((stxu+h*.01).gt.hazop)stxu=hazop-h*.01 !cv 06.06.2025
       Hakt=Stxu+H*.01
       Lxu=Stxu
       IF(Lxu.gt.3) Lxu=int(Lxu*10.0001)*.1
@@ -5822,6 +5424,7 @@
 !     .....Rundung auf 10cm
       Met=10
 !................................Klasse u Vol.des X-Holzes-unten
+      IF((stxu+h*.01).gt.hazop)stxu=hazop-h*.01 !cv 06.06.2025
       Hakt=Stxu+H*.01
       Lxu=Stxu
       IF(Lxu.gt.3) Lxu=int(Lxu*10.0001)*.1
@@ -6249,7 +5852,7 @@
 
       VolRer=0
       VoluR=0
-
+      IF((stxu+h*.01).gt.hazop)stxu=hazop-h*.01 !cv 06.06.2025
       Hakt=Stxu+H*.01
       Lxu=Stxu
 

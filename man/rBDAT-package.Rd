@@ -2,6 +2,7 @@
 % Please edit documentation in R/rBDAT-package.R
 \docType{package}
 \name{rBDAT-package}
+\alias{rBDAT}
 \alias{rBDAT-package}
 \title{Implementation of BDAT Tree Taper Fortran Functions}
 \description{
@@ -21,5 +22,28 @@ Forschungsauftrag: "Biometrische Lösungen für die Berechnung des Volumens,
 der Sortierung, der Rindenabzüge und der Ernteverluste im Rahmen der
 Bundeswaldinventur". ISSN: 0178-3165. Available at
 \url{https://gitlab.com/vochr/rbdat/-/blob/master/bdatdocs/}
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://gitlab.com/vochr/rbdat}
+}
+
+}
+\author{
+\strong{Maintainer}: Christian Vonderach \email{christian.vonderach@forst.bwl.de}
+
+Authors:
+\itemize{
+  \item Edgar Kublin
+  \item Bernhard Bösch
+  \item Gerald Kändler
+}
+
+Other contributors:
+\itemize{
+  \item Dominik Cullmann [contributor]
+}
+
 }
 \keyword{package}

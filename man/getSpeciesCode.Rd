@@ -4,12 +4,17 @@
 \alias{getSpeciesCode}
 \title{Get BDAT species code or transform it to a name.}
 \usage{
-getSpeciesCode(inSp = NULL, outSp = NULL)
+getSpeciesCode(inSp = NULL, outSp = NULL, version = c(2, 1))
 }
 \arguments{
 \item{inSp}{species information given, either numeric or character}
 
 \item{outSp}{character vector of names, for which information should be returned}
+
+\item{version}{numeric vector giving which look-up table version is required.
+Defaults to \code{2}, i.e. the latest version (currently from june 2025).
+Alternatively, one can use \code{version=1} to get the previous version. See
+details.}
 }
 \value{
 vector or data.frame, depending on length of 'outSp'.
@@ -23,19 +28,24 @@ name
 The function matches inSp to outSp. Depending on inSp, being either
 a numeric vector of values between 1 and 36 or a character vector of species
 names. Possible names are those which could be return values. One can get all
-names and the respective species code by calling the function with inSP=NULL
-and outSP=NULL (the default).
+names and the respective species code by calling the function with
+\code{inSP=NULL} and \code{outSP=NULL} (the default).
 
-English species names and codes are taken from
+English species names and codes are now (June 2025) taken from the German
+National Forest Inventory (\code{version=2}, default), in the previous
+version (\code{version=1}) the English species names were taken from
 https://www.forestry.gov.uk/pdf/PF2011_Tree_Species.pdf/$FILE/PF2011_Tree_Species.pdf
 while slightly adjusting the codes to be unique compared to the german codes
 (e.g. European larch is now ELA instead of EL).
 
-Any given species code outside the interval [1, 36] is given the code 1
-(i.e. Norway spruce), while throwing a warning. If any inSp - name is invalid,
-i.e. not in species list, this throws an error.
+The version change only refers to column \code{long}, not to column \code{short}.
 
-All elements of outSp, which are not colnames of the default returned
+Any given species code outside the interval [1, 36] is set back to the code 1
+(i.e. European spruce (version=2) or Norway spruce (version=1)), while
+throwing a warning. If any inSp - name is invalid, i.e. not in species list,
+this throws an error.
+
+All elements of outSp, which are not column names of the default returned
 data.frame, are silently dropped.
 }
 \examples{
@@ -51,4 +61,11 @@ getSpeciesCode(inSp = c("Buche", "Fichte")) ## asking for codes of german names
 getSpeciesCode(inSp = c("BE", "NS")) ## ... abbreviated english names
 getSpeciesCode(inSp = c("beech", "Norway spruce")) ## ... english names
 getSpeciesCode(inSp = c("Fagus sylvatica", "Picea abies")) ### ... scientific names
+
+# get previous species look-up table
+getSpeciesCode(version=1)
+# as compared to the current version
+getSpeciesCode() # or explicitly
+getSpeciesCode(version=2)
+
 }

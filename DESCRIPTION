@@ -1,7 +1,7 @@
 Package: rBDAT
 Type: Package
 Title: Implementation of BDAT Tree Taper Fortran Functions
-Version: 1.0.1.9000
+Version: 1.1.0
 Authors@R: c(person("Christian", "Vonderach", 
   email="christian.vonderach@forst.bwl.de", role=c("aut", "cre")),
   person("Edgar", "Kublin", role="aut"),
@@ -19,9 +19,9 @@ Imports: utils, graphics
 Suggests: knitr, pkgload, rmarkdown, RUnit, testthat
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2025-05-08 09:17:43 UTC; christian.vonderach
+Packaged: 2025-06-06 12:49:54 UTC; christian.vonderach
 Author: Christian Vonderach [aut, cre],
   Edgar Kublin [aut],
   Bernhard Bösch [aut],

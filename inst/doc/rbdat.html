@@ -427,7 +427,7 @@ defines a second diameter in 30% of three height according to the
 the possibility of more precisely specifying taper form see further
 below.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(rBDAT)</span></code></pre></div>
-<pre><code>## This is rBDAT 1.0.1.9000</code></pre>
+<pre><code>## This is rBDAT 1.1.0</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">buildTree</span>(<span class="at">tree =</span> <span class="fu">list</span>(<span class="at">spp=</span><span class="dv">1</span>, <span class="at">D1=</span><span class="dv">30</span>, <span class="at">H=</span><span class="dv">27</span>))</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">str</span>(tree)</span></code></pre></div>
 <pre><code>## Classes &#39;datBDAT&#39; and &#39;data.frame&#39;:  1 obs. of  6 variables:
@@ -452,51 +452,51 @@ and each posesses its own BDAT-species code. This code and the
 respective species name (short and long format), english species name
 and scientific name can be retrieved by the getSpeciesCode-function:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">getSpeciesCode</span>()</span></code></pre></div>
-<pre><code>##    ID kurz            lang short                long            scientific
-## 1   1   Fi          Fichte    NS       Norway spruce           Picea abies
-## 2   2   SF    Sitka-Fichte    SS        Sitka spruce      Picea sitchensis
-## 3   3   Ta           Tanne   ESF European silver fir            Abies alba
-## 4   4   KT    Kuestentanne    GF           Grand fir         Abies grandis
-## 5   5  Kie          Kiefer    SP         Scotch pine      Pinus sylvestris
-## 6   6   SK   Schwarzkiefer   AUP       Austrian pine           Pinus nigra
-## 7   7   WK Weymouthskiefer   WEP       Weymouth pine         Pinus strobus
-## 8   8   DG       Douglasie    DF         Douglas fir Pseudotsuga menziesii
-## 9   9   La         Laerche   XLA               larch            Larix spp.
-## 10 10   EL  Europ. Laerche   ELA      European larch         Larix decidua
-## 11 11   JL    Jap. Laerche   JLA      Japanese larch       Larix kaempferi
-## 12 12   Th           Thuja    RC   Western red cedar         Thuja plicata
-## 13 13   Ts           Tsuga    WH     Western hemlock    Tsuga heterophylla
-## 14 14   SN             sNB    XC      other conifers     Coniferales trees
-## 15 15   Bu           Buche    BE               beech       Fagus sylvatica
-## 16 16   HB       Hainbuche   HBM            hornbeam      Carpinus betulus
-## 17 17   Ei           Eiche    OK oak (robur/petraea)          Quercus spp.
-## 18 18   RE        Roteiche   ROK             Red oak         Quercus rubra
-## 19 19   Pa          Pappel   XPO              poplar          Populus spp.
-## 20 20   BP    Balsampappel   BPO       Balsam poplar   Populus balsamifera
-## 21 21   Es           Esche    AH                 ash    Fraxinus excelsior
-## 22 22   Ah           Ahorn   XAH               maple             Acer spp.
-## 23 23   BA       Bergahorn    SY            sycamore   Acer pseudoplatanus
-## 24 24   SA      Spitzahorn   NOM        Norway maple      Acer platanoides
-## 25 25   FA       Feldahorn    FM         Field maple        Acer campestre
-## 26 26   Bi           Birke   XBI               birch           Betula spp.
-## 27 27   Li           Linde    LI           lime tree            Tilia spp.
-## 28 28   Er            Erle    AR               alder            Alnus spp.
-## 29 29  Kir         Kirsche   WCH         Wild cherry          Prunus avium
-## 30 30   Ul            Ulme    EM                 elm            Ulmus spp.
-## 31 31   Ro         Robinie    BL        black locust  Robinia pseudoacacia
-## 32 32   El        Elsbeere   WST   Wild service tree     Sorbus torminalis
-## 33 33   Ka        Kastanie    SC      Sweet chestnut       Castanea sativa
-## 34 34   We           Weide   XWL              willow            Salix spp.
-## 35 35   LB             sLB    XB   other broadleaves   Magnoliopsida trees
-## 36 36   VB      Vogelbeere   ROW               rowan      Sorbus aucuparia</code></pre>
+<pre><code>##    ID kurz            lang short                   long            scientific
+## 1   1   Fi          Fichte    NS        European spruce           Picea abies
+## 2   2   SF    Sitka-Fichte    SS           Sitka spruce      Picea sitchensis
+## 3   3   Ta           Tanne   ESF    European silver fir            Abies alba
+## 4   4   KT    Kuestentanne    GF              Grand fir         Abies grandis
+## 5   5  Kie          Kiefer    SP            Common pine      Pinus sylvestris
+## 6   6   SK   Schwarzkiefer   AUP    European black pine           Pinus nigra
+## 7   7   WK Weymouthskiefer   WEP          Weymouth pine         Pinus strobus
+## 8   8   DG       Douglasie    DF            Douglas fir Pseudotsuga menziesii
+## 9   9   La         Laerche   XLA                  larch            Larix spp.
+## 10 10   EL  Europ. Laerche   ELA         European larch         Larix decidua
+## 11 11   JL    Jap. Laerche   JLA         Japanese larch       Larix kaempferi
+## 12 12   Th           Thuja    RC            Arbor vitae         Thuja plicata
+## 13 13   Ts           Tsuga    WH         Canada hemlock    Tsuga heterophylla
+## 14 14   SN             sNB    XC         other conifers     Coniferales trees
+## 15 15   Bu           Buche    BE           Common beech       Fagus sylvatica
+## 16 16   HB       Hainbuche   HBM               hornbeam      Carpinus betulus
+## 17 17   Ei           Eiche    OK Common oak/sessile oak          Quercus spp.
+## 18 18   RE        Roteiche   ROK                Red oak         Quercus rubra
+## 19 19   Pa          Pappel   XPO                 poplar          Populus spp.
+## 20 20   BP    Balsampappel   BPO          Balsam poplar   Populus balsamifera
+## 21 21   Es           Esche    AH             Common ash    Fraxinus excelsior
+## 22 22   Ah           Ahorn   XAH                  maple             Acer spp.
+## 23 23   BA       Bergahorn    SY         sycamore maple   Acer pseudoplatanus
+## 24 24   SA      Spitzahorn   NOM            plane maple      Acer platanoides
+## 25 25   FA       Feldahorn    FM            field maple        Acer campestre
+## 26 26   Bi           Birke   XBI                  birch           Betula spp.
+## 27 27   Li           Linde    LI              lime tree            Tilia spp.
+## 28 28   Er            Erle    AR                  alder            Alnus spp.
+## 29 29  Kir         Kirsche   WCH                 cherry          Prunus avium
+## 30 30   Ul            Ulme    EM                    elm            Ulmus spp.
+## 31 31   Ro         Robinie    BL         Common robinia  Robinia pseudoacacia
+## 32 32   El        Elsbeere   WST      Wild service tree     Sorbus torminalis
+## 33 33   Ka        Kastanie    SC      European chestnut       Castanea sativa
+## 34 34   We           Weide   XWL                 willow            Salix spp.
+## 35 35   LB             sLB    XB      other broadleaves   Magnoliopsida trees
+## 36 36   VB      Vogelbeere   ROW            rowan berry      Sorbus aucuparia</code></pre>
 <p>If the function is called without any parameter, a data.frame is
 returned holding the information which can be retrieved. One can
 alternatively specify the type of <code>input</code> and
 <code>output</code>. <code>Input</code> must be one of the data entries,
 <code>output</code> must be one of the column names.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">getSpeciesCode</span>(<span class="dv">1</span>)</span></code></pre></div>
-<pre><code>##   ID kurz   lang short          long  scientific
-## 1  1   Fi Fichte    NS Norway spruce Picea abies</code></pre>
+<pre><code>##   ID kurz   lang short            long  scientific
+## 1  1   Fi Fichte    NS European spruce Picea abies</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">getSpeciesCode</span>(<span class="st">&quot;Fi&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] 1</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">getSpeciesCode</span>(<span class="st">&quot;NS&quot;</span>) <span class="co"># english abbreviation of Norway spruce</span></span></code></pre></div>
@@ -856,14 +856,14 @@ which is cut before sawlogs.</p>
 <span id="cb73-4"><a href="#cb73-4" tabindex="-1"></a><span class="do">## fixR = relative length addition in %</span></span>
 <span id="cb73-5"><a href="#cb73-5" tabindex="-1"></a><span class="do">## fixZ = minimum cutting diameter for this assortment (Z=Zopf) in cm</span></span>
 <span id="cb73-6"><a href="#cb73-6" tabindex="-1"></a><span class="fu">getAssortment</span>(tree, <span class="at">sort=</span><span class="fu">list</span>(<span class="at">Az=</span><span class="dv">15</span>, <span class="at">fixN=</span><span class="dv">2</span>, <span class="at">fixL=</span><span class="dv">4</span>, <span class="at">fixA=</span><span class="dv">10</span>, <span class="at">fixZ=</span><span class="dv">20</span>)) </span></code></pre></div>
-<pre><code>##   tree No  Sort    height  length     midD      topD       Vol
-## 1    1  1     X  0.000000  0.0000  0.00000  0.000000 0.0000000
-## 2    1  2   Sth  8.470001 10.9000 19.04127 13.584801 0.3103904
-## 3    1  3    Ab  0.000000  0.0000  0.00000  0.000000 0.0000000
-## 4    1  4   Ind  0.000000  0.0000  0.00000  0.000000 0.0000000
-## 5    1  5  nvDh 19.479000  4.7085 10.16843  5.998856 0.0382367
-## 6    1  6 Fix01  0.270000  4.0000 25.86922 24.547409 0.2102405
-## 7    1  7 Fix02  4.370000  4.0000 23.40202 22.309429 0.1720507</code></pre>
+<pre><code>##   tree No  Sort height  length     midD     topD       Vol
+## 1    1  1     X  0.270  8.2000 24.48928 22.25621 0.0000000
+## 2    1  2   Sth 16.670 10.9000 19.04127  0.00000 0.3103904
+## 3    1  3    Ab  0.000  0.0000  0.00000  0.00000 0.0000000
+## 4    1  4   Ind  0.000  0.0000  0.00000  0.00000 0.0000000
+## 5    1  5  nvDh 27.679  4.7085 10.16843  0.00000 0.0382367
+## 6    1  6 Fix01  0.270  4.0000 25.86922 24.54741 0.2102405
+## 7    1  7 Fix02  4.370  4.0000 23.40202 22.30943 0.1720507</code></pre>
 <p>In case the considered tree exhibits rotten/decaying wood at stem
 foot, this can also be specified (in german termed X-Holz):</p>
 <div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" tabindex="-1"></a><span class="fu">getAssortment</span>(tree, <span class="at">sort=</span><span class="fu">list</span>(<span class="at">lX=</span><span class="fl">1.4</span>)) <span class="co"># remove 1.4m from stump upwards</span></span></code></pre></div>
@@ -877,7 +877,7 @@ foot, this can also be specified (in german termed X-Holz):</p>
 assortments:</p>
 <div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" tabindex="-1"></a>assort <span class="ot">&lt;-</span> <span class="fu">getAssortment</span>(tree, <span class="at">sort=</span><span class="fu">list</span>(<span class="at">Az=</span><span class="dv">15</span>, <span class="at">fixN=</span><span class="dv">2</span>, <span class="at">fixL=</span><span class="dv">4</span>, <span class="at">fixA=</span><span class="dv">10</span>, <span class="at">fixZ=</span><span class="dv">20</span>))</span>
 <span id="cb77-2"><a href="#cb77-2" tabindex="-1"></a><span class="fu">plot</span>(tree, <span class="at">assort=</span>assort)</span></code></pre></div>
-<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
 <div id="using-more-than-one-assortment-specification" class="section level4">
 <h4>using more than one assortment specification</h4>
 <p><code>buildTree</code> uses the parameters <code>tree</code> and
